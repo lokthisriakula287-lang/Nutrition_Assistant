@@ -1,28 +1,128 @@
-/* pages/Home.jsx */
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { getDashboard } from "../api/dashboardApi";
+import DashboardLayout from "../layouts/DashboardLayout";
+import WelcomeBanner from "../components/dashboard/WelcomeBanner";
+import StatCard from "../components/dashboard/StatCard";
+import BMIStatus from "../components/dashboard/BMIStatus";
+import AITips from "../components/dashboard/AITips";
 
-const Home = () => {
-  return (
-    <div className="container mx-auto p-8">
-      <div className="bg-emerald-50 rounded-2xl p-10 flex flex-col md:flex-row justify-between items-center">
-        <div>
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Welcome back!</h2>
-          <p className="text-gray-600 text-lg mb-6">Ready to check your progress or generate a new meal plan?</p>
-          <div className="flex gap-4">
-            <Link to="/plans/new" className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition">
-              New Plan
-            </Link>
-            <Link to="/plans/suggested" className="bg-white border border-emerald-600 text-emerald-600 px-6 py-2 rounded-lg font-semibold hover:bg-emerald-50 transition">
-              View Current Plan
-            </Link>
-          </div>
-        </div>
-        <div className="hidden md:block">
-           <img src="https://cdn-icons-png.flaticon.com/512/2424/2424410.png" alt="Healthy" className="w-48 h-48 object-contain" />
-        </div>
-      </div>
-    </div>
-  );
+
+import {
+  Flame,
+  Droplets,
+  Activity,
+  Target,
+} from "lucide-react";
+
+import WeeklyCaloriesChart from "../components/charts/WeeklyCaloriesChart";
+import MealOverview from "../components/dashboard/MealOverview";
+
+export default function Home() {
+const [dashboard, setDashboard] = useState(null);
+
+const loadDashboard = async () => {
+
+    try {
+
+        const res = await getDashboard();
+
+        setDashboard(res.data);
+
+    }
+
+    catch(err){
+
+        console.log(err);
+
+    }
+
 };
 
-export default Home;
+useEffect(()=>{
+
+    loadDashboard();
+
+},[]);
+  return (
+  <DashboardLayout>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-800">
+            Nutrition Dashboard
+          </h1>
+
+          <p className="text-slate-500 mt-2">
+            Monitor your health, nutrition, and daily progress in one place.
+          </p>
+        </div>
+
+        {/* Welcome Banner */}
+        <WelcomeBanner />
+
+        {/* Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
+
+          <StatCard
+            title="Calories"
+            value={dashboard?.calories ?? "--"}
+            subtitle="Today's Calories"
+            icon={<Flame size={28} />}
+            color="bg-orange-500"
+          />
+
+          <StatCard
+            title="Water"
+            value={`${dashboard?.waterConsumed ?? "--"} L`}
+            subtitle="Today's Intake"
+            icon={<Droplets size={28} />}
+            color="bg-sky-500"
+          />
+
+          <StatCard
+            title="BMI"
+            value={dashboard?.bmi ?? "--"}
+            subtitle="Healthy Range"
+            icon={<Activity size={28} />}
+            color="bg-green-500"
+          />
+
+          <StatCard
+            title="Goal"
+            value={dashboard?.goal ?? "--"}
+            subtitle="Current Goal"
+            icon={<Target size={28} />}
+            color="bg-purple-500"
+          />
+
+        </div>
+
+        {/* Weekly Chart + Water */}
+      <WeeklyCaloriesChart />
+
+        {/* Meals + BMI */}
+        <div className="grid lg:grid-cols-3 gap-6 mt-8">
+
+          <div className="lg:col-span-2">
+            <MealOverview />
+          </div>
+
+          <BMIStatus bmi={dashboard?.bmi} />
+
+        </div>
+
+        {/* AI + Activity */}
+        <div className="grid lg:grid-cols-2 gap-6 mt-8">
+
+          <AITips goal={dashboard?.goal} />
+
+          
+
+        </div>
+
+      </div>
+    </div>
+  </DashboardLayout>
+);}

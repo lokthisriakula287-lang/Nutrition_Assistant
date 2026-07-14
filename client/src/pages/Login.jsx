@@ -1,6 +1,6 @@
 /* pages/Login.jsx */
 import { useState } from 'react';
-import axios from 'axios';
+import API from "../api/axios";
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -10,7 +10,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/users/login', formData);
+      const res = await API.post("/users/login", formData);
       localStorage.setItem('token', res.data.token);
       navigate('/home');
     } catch (err) {
